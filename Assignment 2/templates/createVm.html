@@ -1,0 +1,29 @@
+<html>
+    <body>
+        <h1>Choose Your Plan</h1>
+        <form method = 'POST' action = './chooseplan'>
+            <div>
+                <p>Basic Virtual Server Instance - 8 virtual processor cores, 16 GB of virtual RAM, 20 GB of
+                storage space in the root file system - 5 cents/minute</p>
+                <input type = 'radio' name = 'plan' value = 'planA'>Plan A 
+            </div>
+
+            <div>
+                <p>Large Virtual Server Instance - 32 virtual processor cores, 64 GB of virtual RAM, 20 GB of
+                storage space in the root file system -10 cents/minute </p>
+                <input type = 'radio' name = 'plan' value = 'planB'>Plan B
+            </div>
+
+            <div>
+                <p>Ultra-Large Virtual Server Instance-128 virtual processor cores, 512 GB of virtual RAM, 40
+                GB of storage space in the root file system- 15 cents /minute</p>
+                <input type = 'radio' name = 'plan' value = 'planC'>Plan C
+            </div>
+            <br/>
+            <br/>
+            
+            <input type = 'submit' value = 'Create'>
+            
+        </form>
+    </body>
+</html>

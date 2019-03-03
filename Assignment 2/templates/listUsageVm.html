@@ -1,0 +1,38 @@
+<html>
+    <body>
+        <h1>Usage of Virtual Machine</h1>
+        <table border = '1'>
+            <tr>
+                <th>id</th>
+                <th>Instance ID</th>
+                <th>plan</th>
+                <th>starttime</th>
+                <th>stoptime</th>
+                <th>Usage</th>
+                <th>Charges</th>
+            </tr>
+            {% for virtual_machine_usage in virtual_machines_usage %}
+            <tr>
+                <td>{{virtual_machine_usage.id}}</td>
+                <td>{{virtual_machine_usage.instanceid}}</td>
+                <td>{{virtual_machine_usage.plan}}</td>
+                <td>{{virtual_machine_usage.starttime}}</td>
+                <td>{{virtual_machine_usage.stoptime}}</td>
+                <td>{{virtual_machine_usage.usage}}</td>
+                <td>{{virtual_machine_usage.charges}}</td>
+                <td><a href='./deleteUsage/{{virtual_machine_usage.id}}'>Delete</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+        <div>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                   {% for message in messages %}
+                      <p>{{ message }}</p>
+                    {% endfor %}    
+              {% endif %}
+            {% endwith %}
+            {% block body %}{% endblock %}
+        </div>
+    </body>
+</html>

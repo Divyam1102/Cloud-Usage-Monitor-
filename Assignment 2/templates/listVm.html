@@ -1,0 +1,40 @@
+<html>
+    <body>
+        <h1> Virtual Machine Instance</h1>
+            <table border = '1'>
+                <tr>
+                    <th>Instance ID</th>
+                    <th>Plan</th>
+                    <th>Start</th>
+                    <th>Stop</th>
+                    <th>Delete</th>
+                    <th>Upgrade</th>
+                    <th>Downgrade</th>
+                </tr>
+                {% for virtual_machine in virtual_machines %}
+                <tr>
+                    <td>{{virtual_machine.id}}</td>
+                    <td>{{virtual_machine.plan}}</td>
+                    <td><a href='./startVm/{{virtual_machine.id}}'>Start</a></td>
+                    <td><a href='./startVm/stopVm/{{virtual_machine.id}}'>Stop</a></td>
+                    <td><a href='./deleteVm/{{virtual_machine.id}}'>Delete</a></td>
+                    <td><a href='./upgradeVm/{{virtual_machine.id}}'>Upgrade</a></td>
+                    <td><a href='./downgradeVm/{{virtual_machine.id}}'>Downgrade</a></td>
+                </tr>
+                {% endfor %}
+            </table>
+            <div>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                   {% for message in messages %}
+                      <p>{{ message }}</p>
+                    {% endfor %}    
+              {% endif %}
+            {% endwith %}
+            {% block body %}{% endblock %}
+            </div>
+            
+            
+            
+    <body>
+</html>
