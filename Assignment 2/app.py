@@ -14,7 +14,6 @@ engine = create_engine('sqlite:///tutorial.db', echo = True)
 ##Intialize the Flask Application
 app = Flask(__name__)
 
-
 ## Routes to the home function
 @app.route("/", methods = ["GET","POST"])
 def home():
@@ -95,9 +94,12 @@ def upgradeVm(id):
         return redirect('/listVm')
         
     virtual_machines.plan = current_plan
-    virtual_machines_usage.plan = current_plan
-    virtual_machines_usage = VirtualMachineUsage(instanceid = id, plan = current_plan, starttime = startnow, stoptime = startnow, usage = usage, charges = charges)
-    s.add(virtual_machines_usage)
+    if virtual_machines_usage:
+        if virtual_machines_usage.plan != virtual_machines.plan:
+            virtual_machines_usage = VirtualMachineUsage(instanceid = id, plan = current_plan, starttime = startnow, stoptime = startnow, usage = usage, charges = charges)
+            s.add(virtual_machines_usage)
+    
+
     s.commit()
     flash('Your plan is upgraded to ' + virtual_machines.plan )
     return redirect('/listVm')
@@ -128,10 +130,9 @@ def downgradeVm(id):
         return redirect('/listVm')
         
     virtual_machines.plan = current_plan
-    virtual_machines_usage.plan = current_plan
-    virtual_machines_usage = VirtualMachineUsage(instanceid = id, plan = current_plan, starttime = startnow, stoptime = startnow, usage = usage, charges = charges)
-    s.add(virtual_machines_usage)
-    
+    if virtual_machines_usage.plan == current_plan:
+        virtual_machines_usage = s.query(VirtualMachineUsage).filter_by(plan = current_plan).first()
+        virtual_machines_usage.stoptime = startnow
     s.commit()
     flash('Your plan is demoted to ' + virtual_machines.plan )
     return redirect('/listVm')
@@ -150,10 +151,9 @@ def starttime(id):
     plan = virtual_machines.plan
     virtual_machines_usage = s.query(VirtualMachineUsage).filter_by(instanceid = id).first()   
     if virtual_machines_usage:
-        virtual_machines_usage.stoptime = startnow
-        flash(virtual_machines_usage.plan)
-        
-        s.commit()
+        if(virtual_machines_usage.plan == plan):
+            virtual_machines_usage.stoptime = startnow
+            s.commit()
     else:
         virtual_machines_usage = VirtualMachineUsage(instanceid = id, plan = plan, starttime = startnow, stoptime = startnow, usage = usage, charges = charges)
         s.add(virtual_machines_usage)
@@ -168,18 +168,27 @@ def stoptime(id):
     stopnow = datetime.datetime.now()
     Session = sessionmaker(bind = engine)
     s = Session()
-    virtual_machines_usage = s.query(VirtualMachineUsage).filter_by(instanceid = id).first()
-    hours = virtual_machines_usage.stoptime.hour - virtual_machines_usage.starttime.hour
-    minutes = virtual_machines_usage.stoptime.minute -virtual_machines_usage.starttime.minute
-    hr_to_min = hours * 60
-    virtual_machines_usage.usage = minutes + hr_to_min
-    virtual_machines_usage.stoptime = stopnow
-    if virtual_machines_usage.plan == 'planA':
-        virtual_machines_usage.charges = 0.05 * virtual_machines_usage.usage
-    elif virtual_machines_usage.plan == 'planB':
-        virtual_machines_usage.charges = 0.10 * virtual_machines_usage.usage
-    elif virtual_machines_usage.plan == 'planC':
-        virtual_machines_usage.charges = 0.15 * virtual_machines_usage.usage
+    
+    virtual_machines = s.query(CreateVirtualMachine).filter_by(id = id ).first()
+    
+    plan = virtual_machines.plan
+    virtual_machines_usage = s.query(VirtualMachineUsage).filter_by(instanceid = id, plan=plan).first()
+    
+    if virtual_machines_usage:
+        if virtual_machines_usage.plan == plan:
+            virtual_machines_usage.stoptime = stopnow
+            hours = virtual_machines_usage.stoptime.hour - virtual_machines_usage.starttime.hour
+            minutes = virtual_machines_usage.stoptime.minute -virtual_machines_usage.starttime.minute
+            hr_to_min = hours * 60
+            virtual_machines_usage.usage = minutes + hr_to_min
+            if virtual_machines_usage.plan == 'planA':
+                virtual_machines_usage.charges = 0.05 * virtual_machines_usage.usage
+            elif virtual_machines_usage.plan == 'planB':
+                virtual_machines_usage.charges = 0.10 * virtual_machines_usage.usage
+            elif virtual_machines_usage.plan == 'planC':
+                virtual_machines_usage.charges = 0.15 * virtual_machines_usage.usage
+        else:
+            flash(virtual_machines_usage.plan, "is not a plan")
     s.commit()
 
     flash("Details of Cloud Usage")
@@ -213,4 +222,4 @@ def deleteUsageVm(id):
 
 if __name__ == "__main__":
     app.secret_key = os.urandom(12)
-    app.run(debug = True)
+    app.run(host = os.getenv('IP', '0.0.0.0'), port = int(os.getenv('PORT', 8080)),debug = True)
